@@ -40,6 +40,28 @@ Runner.run(runner, engine);
         shakeScene(engine);
 });
 
+var shakeScene = function(engine) {
+    var bodies = Composite.allBodies(engine.world);
+
+    for (var i = 0; i < bodies.length; i++) {
+        var body = bodies[i];
+
+        if (!body.isStatic && body.position.y >= 500) {
+           // var forceMagnitude = 0.02 * body.mass;
+
+            Body.setPosition(body,{
+                x: Common.random()*body.position.x,
+                y: Common.random()
+            })
+
+          /*  Body.applyForce(body, body.position, { 
+                x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]), 
+                y: -forceMagnitude + Common.random() * -forceMagnitude
+            });*/
+        }
+    }
+};
+
 //  collisionStart event on an engine
 Events.on(engine, 'collisionStart', function(event) {
     var pairs = event.pairs;
@@ -82,36 +104,18 @@ Events.on(engine, 'collisionEnd', function(event) {
 var bodyStyle = { fillStyle: '#222' };
 
 // scene code
-Composite.add(world, [
-Bodies.rectangle(400, 0, 800, 50, { isStatic: true, render: bodyStyle }),
-Bodies.rectangle(400, 600, 800, 50, { isStatic: true, render: bodyStyle }),
-Bodies.rectangle(800, 300, 50, 600, { isStatic: true, render: bodyStyle }),
-Bodies.rectangle(0, 300, 50, 600, { isStatic: true, render: bodyStyle })
-]);
+
+var wall1 = Bodies.rectangle(400, 0, 800, 50, { isStatic: true, render: bodyStyle })
+var wall2 =Bodies.rectangle(400, 600, 800, 50, { isStatic: true, render: bodyStyle })
+var wall3 =Bodies.rectangle(800, 300, 50, 600, { isStatic: true, render: bodyStyle })
+var wall4 =Bodies.rectangle(0, 300, 50, 600, { isStatic: true, render: bodyStyle })
+Composite.add(world, [wall1,wall2,wall3,wall4]);
 
 var stack = Composites.stack(70, 100, 9, 4, 50, 50, function(x, y) {
 return Bodies.circle(x, y, 15, { restitution: 1, render: bodyStyle });
 });
 
 Composite.add(world, stack);
-
-
-var shakeScene = function(engine) {
-    var bodies = Composite.allBodies(engine.world);
-
-    for (var i = 0; i < bodies.length; i++) {
-        var body = bodies[i];
-
-        if (!body.isStatic && body.position.y >= 500) {
-            var forceMagnitude = 0.02 * body.mass;
-
-            Body.applyForce(body, body.position, { 
-                x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]), 
-                y: -forceMagnitude + Common.random() * -forceMagnitude
-            });
-        }
-    }
-};
 
 // add mouse control
 var mouse = Mouse.create(render.canvas),
