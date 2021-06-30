@@ -31,66 +31,50 @@ Render.run(render);
 var runner = Runner.create();
 Runner.run(runner, engine);
 
-  //using beforeUpdate event on an engine
-  Events.on(engine, 'beforeUpdate', function(event) {
-    var engine = event.source;
+var bodyStyle = { fillStyle: '#222' };
 
-    // apply random forces every 5 secs
-    if (event.timestamp % 5000 < 50)
-        shakeScene(engine);
+// Creating edges
+var wall1 = Bodies.rectangle(400, 0, 800, 50, { isStatic: true, render: bodyStyle }),
+    wall2 = Bodies.rectangle(400, 600, 800, 50, { isStatic: true, render: bodyStyle }),
+    wall3 = Bodies.rectangle(800, 300, 50, 600, { isStatic: true, render: bodyStyle }),
+    wall4 = Bodies.rectangle(0, 300, 50, 600, { isStatic: true, render: bodyStyle });
+
+//stack of circular bodies
+var stack = Composites.stack(70, 100, 9, 4, 50, 50, function(x, y) {
+    return Bodies.circle(x, y, 15, { restitution: 1, render: bodyStyle });
 });
 
-var shakeScene = function(engine) {
-    var bodies = Composite.allBodies(engine.world);
+//Adding them to the world
+Composite.add(world, [wall1, wall2, wall3, wall4, stack]);
 
-    for (var i = 0; i < bodies.length; i++) {
-        var body = bodies[i];
-
-        if (!body.isStatic && body.position.y >= 500) {
-           // var forceMagnitude = 0.02 * body.mass;
-
-            Body.setPosition(body,{
-                x: Common.random()*body.position.x,
-                y: Common.random()
-            })
-
-          /*  Body.applyForce(body, body.position, { 
-                x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]), 
-                y: -forceMagnitude + Common.random() * -forceMagnitude
-            });*/
-        }
-    }
-};
-
-//  collisionStart event on an engine
+// using collisionStart event on an engine
 Events.on(engine, 'collisionStart', function(event) {
     var pairs = event.pairs;
-    
+    //console.log("Executing collisionStart event...");
     // change object colours to show those starting a collision
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
         pair.bodyA.render.fillStyle = 'red';
         pair.bodyB.render.fillStyle = 'red';
     }
-    });
+});
 
-    // an example of using collisionActive event on an engine
-    Events.on(engine, 'collisionActive', function(event) {
-        var pairs = event.pairs;
+// an example of using collisionActive event on an engine
+Events.on(engine, 'collisionActive', function(event) {
+    var pairs = event.pairs;
+    //console.log("Executing collisionActive event...");
+    // change object colours to show those in an active collision (e.g. resting contact)
+    for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i];
+        pair.bodyA.render.fillStyle = '#333';
+        pair.bodyB.render.fillStyle = '#333';
+    }
+});
 
-        // change object colours to show those in an active collision (e.g. resting contact)
-        for (var i = 0; i < pairs.length; i++) {
-            var pair = pairs[i];
-            pair.bodyA.render.fillStyle = '#333';
-            pair.bodyB.render.fillStyle = '#333';
-        }
-    });
-
-    
 // an example of using collisionEnd event on an engine
 Events.on(engine, 'collisionEnd', function(event) {
     var pairs = event.pairs;
-    
+    //console.log("Executing collisionEnd event...");
     // change object colours to show those ending a collision
     for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i];
@@ -98,26 +82,41 @@ Events.on(engine, 'collisionEnd', function(event) {
         pair.bodyA.render.fillStyle = '#222';
         pair.bodyB.render.fillStyle = '#222';
     }
-    });
-    
-
-var bodyStyle = { fillStyle: '#222' };
-
-// scene code
-
-var wall1 = Bodies.rectangle(400, 0, 800, 50, { isStatic: true, render: bodyStyle })
-var wall2 =Bodies.rectangle(400, 600, 800, 50, { isStatic: true, render: bodyStyle })
-var wall3 =Bodies.rectangle(800, 300, 50, 600, { isStatic: true, render: bodyStyle })
-var wall4 =Bodies.rectangle(0, 300, 50, 600, { isStatic: true, render: bodyStyle })
-Composite.add(world, [wall1,wall2,wall3,wall4]);
-
-var stack = Composites.stack(70, 100, 9, 4, 50, 50, function(x, y) {
-return Bodies.circle(x, y, 15, { restitution: 1, render: bodyStyle });
 });
 
-Composite.add(world, stack);
+/*
+Events.on(engine, 'beforeUpdate', function(event) {
+    //console.log("Executing beforeUpdate event...");
+    console.log(event);
+});
+*/
 
-// add mouse control
+//using beforeUpdate event on an engine
+Events.on(engine, 'beforeUpdate', function(event) {
+    var engine = event.source;
+    // apply random forces every 5 secs
+    // timeframe at which the event is checked
+    if (event.timestamp % 5000 < 50){
+        shakeScene(engine);
+    }
+});
+    
+// function to shake bodies on canvas
+var shakeScene = function(engine) {
+    var bodies = Composite.allBodies(engine.world);
+    for (var i = 0; i < bodies.length; i++) {
+        var body = bodies[i];
+        if (!body.isStatic && body.position.y >= 500) {
+            var forceMagnitude = 0.02 * body.mass;
+            Body.applyForce(body, body.position, {
+                x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]),
+                y: -forceMagnitude + Common.random() * -forceMagnitude
+            });
+        }
+    }
+};
+
+// add mouse control (optional)
 var mouse = Mouse.create(render.canvas),
 mouseConstraint = MouseConstraint.create(engine, {
     mouse: mouse,
