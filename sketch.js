@@ -107,10 +107,14 @@ var shakeScene = function(engine) {
     for (var i = 0; i < bodies.length; i++) {
         var body = bodies[i];
         if (!body.isStatic && body.position.y >= 500) {
-            var forceMagnitude = 0.02 * body.mass;
+
+            //Calculating force and then giving it randomness
+            //multiplying body mass with 0.02 makes it lighter for extra bounce
+            var forceMagnitude=(0.02 * body.mass)*Common.random();
+            
             Body.applyForce(body, body.position, {
-                x: (forceMagnitude + Common.random() * forceMagnitude) * Common.choose([1, -1]),
-                y: -forceMagnitude + Common.random() * -forceMagnitude
+                x: forceMagnitude*Common.choose([1,-1]),
+                y:-forceMagnitude
             });
         }
     }
